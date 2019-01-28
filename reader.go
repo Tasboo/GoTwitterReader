@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -41,11 +42,16 @@ func main() {
 	summary := new(twitterSummary)
 	summary.DateTime = time.Now().String()
 	summary.Feeds = []twitterFeed{}
-
-	for _, element := range users {
-		feed := twitterFeed{User: element, Tweets: getUserFeed(element)}
-		summary.Feeds = append(summary.Feeds, feed)
+	var wg sync.WaitGroup
+	wg.Add((len(users)))
+	for _, user := range users {
+		go func(element string) {
+			defer wg.Done()
+			feed := twitterFeed{User: element, Tweets: getUserFeed(element)}
+			summary.Feeds = append(summary.Feeds, feed)
+		}(user)
 	}
+	wg.Wait()
 	outFile, err := os.Create("output" + time.Now().Format("2006_01_02_15_04_05") + ".json")
 	if err != nil {
 		log.Fatal(err)
@@ -78,8 +84,8 @@ func getUserFeed(user string) []tweet {
 		log.Fatal(err)
 	}
 
-	for _, element := range headers {
-		request.Header.Set(element.header, element.value)
+	for _, header := range headers {
+		request.Header.Set(header.header, header.value)
 	}
 	response, err := client.Do(request)
 	if err != nil {
@@ -116,8 +122,8 @@ func getUserFeed(user string) []tweet {
 func isGoodTweet(tweet string) bool {
 	programmerStrings := getKeyStrings()
 
-	for _, element := range programmerStrings {
-		if strings.Contains(tweet, element) {
+	for _, keyword := range programmerStrings {
+		if strings.Contains(tweet, keyword) {
 			return true
 		}
 	}
