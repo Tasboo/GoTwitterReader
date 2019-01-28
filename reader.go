@@ -41,9 +41,9 @@ func main() {
 	summary := new(twitterSummary)
 	summary.DateTime = time.Now().String()
 	summary.Feeds = []twitterFeed{}
-	log.Output(0, "1")
+
 	for _, element := range users {
-		feed := twitterFeed{User: element, Tweets: getJSON(element)}
+		feed := twitterFeed{User: element, Tweets: getUserFeed(element)}
 		summary.Feeds = append(summary.Feeds, feed)
 	}
 	outFile, err := os.Create("output" + time.Now().Format("2006_01_02_15_04_05") + ".json")
@@ -58,7 +58,7 @@ func main() {
 	}
 }
 
-func getJSON(user string) []tweet {
+func getUserFeed(user string) []tweet {
 	client := &http.Client{
 		Timeout: 30 * time.Second,
 	}
