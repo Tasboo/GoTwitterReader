@@ -6,4 +6,4 @@ Uses https://github.com/PuerkitoBio/goquery for HTML queries
 
 Referenced https://github.com/kennethreitz/twitter-scraper for logic and basic howto of how to scrape twitter feeds
 
-Use and copy at your own risk.  
+Created for personal use only.  Use and copy at your own risk.  
