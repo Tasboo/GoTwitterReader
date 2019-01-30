@@ -44,14 +44,18 @@ func main() {
 	summary.Feeds = []twitterFeed{}
 	var wg sync.WaitGroup
 	wg.Add((len(users)))
+	ch := make(chan twitterFeed, len(users))
 	for _, user := range users {
-		go func(element string) {
+		go func(u string) {
 			defer wg.Done()
-			feed := twitterFeed{User: element, Tweets: getUserFeed(element)}
-			summary.Feeds = append(summary.Feeds, feed)
+			ch <- twitterFeed{User: u, Tweets: getUserFeed(u)}
 		}(user)
 	}
 	wg.Wait()
+	close(ch)
+	for feed := range ch {
+		summary.Feeds = append(summary.Feeds, feed)
+	}
 	outFile, err := os.Create("output" + time.Now().Format("2006_01_02_15_04_05") + ".json")
 	if err != nil {
 		log.Fatal(err)
